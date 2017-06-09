@@ -21,7 +21,7 @@ Public Class dlgSpells
     Private strCurrDataName As String = ""
     Private bFirstLoad As Boolean = True
 
-    Private Sub dlgStartofRains_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+    Private Sub dlgSpells_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         autoTranslate(Me)
         If bFirstLoad Then
             InitialiseDialog()
@@ -33,13 +33,14 @@ Public Class dlgSpells
         TestOKEnabled()
     End Sub
 
-    Private Sub ucrSelectorForStartofRains_DataFrameChanged() Handles ucrSelectorForStartofRains.DataFrameChanged
-        strCurrDataName = Chr(34) & ucrSelectorForStartofRains.ucrAvailableDataFrames.cboAvailableDataFrames.SelectedItem & Chr(34)
+    Private Sub ucrSelectorForStartofRains_DataFrameChanged() Handles ucrSelectorForSpells.DataFrameChanged
+        strCurrDataName = Chr(34) & ucrSelectorForSpells.ucrAvailableDataFrames.cboAvailableDataFrames.SelectedItem & Chr(34)
         clsAddKey.AddParameter("data_name", strCurrDataName)
         firstDayofTheYear()
     End Sub
 
     Private Sub InitialiseDialog()
+        ucrBase.iHelpTopicID = 200
         clsAddKey.SetRCommand(frmMain.clsRLink.strInstatDataObject & "$add_key")
         clsDayFromAndTo.SetRCommand("instat_calculation$new")
         clsDayFromAndTo.SetAssignTo("Day_From_and_To")
@@ -58,10 +59,10 @@ Public Class dlgSpells
         clsAdditionalCondition.SetAssignTo("Additional_Condition")
 
         clsMaxValueList.SetRCommand("list")
-        ucrReceiverRainfall.Selector = ucrSelectorForStartofRains
-        ucrReceiverYear.Selector = ucrSelectorForStartofRains
-        ucrReceiverDate.Selector = ucrSelectorForStartofRains
-        ucrReceiverDayOfYear.Selector = ucrSelectorForStartofRains
+        ucrReceiverRainfall.Selector = ucrSelectorForSpells
+        ucrReceiverYear.Selector = ucrSelectorForSpells
+        ucrReceiverDate.Selector = ucrSelectorForSpells
+        ucrReceiverDayOfYear.Selector = ucrSelectorForSpells
         ucrReceiverDate.SetMeAsReceiver()
 
         ucrReceiverDate.AddIncludedMetadataProperty("Climatic_Type", {Chr(34) & "date" & Chr(34)})
@@ -87,10 +88,19 @@ Public Class dlgSpells
         nudFrom.Maximum = 366
         nudTo.Minimum = 1
         nudTo.Maximum = 366
+
+        'save
+        ucrSaveSpells.SetDataFrameSelector(ucrSelectorForSpells.ucrAvailableDataFrames)
+        ucrSaveSpells.SetLabelText("New Column Name:")
+        ucrSaveSpells.SetIsTextBox()
+        ucrSaveSpells.SetPrefix("Spells")
+        ucrSaveSpells.SetSaveTypeAsColumn()
     End Sub
 
     Private Sub SetDefaults()
-        ucrSelectorForStartofRains.Reset()
+        ucrSelectorForSpells.Reset()
+        ucrSaveSpells.Reset()
+
         TestOKEnabled()
 
         chkConditionRain.Checked = False
@@ -119,7 +129,7 @@ Public Class dlgSpells
     End Sub
 
     Private Sub TestOKEnabled()
-        If Not ucrReceiverRainfall.IsEmpty AndAlso Not ucrReceiverDate.IsEmpty AndAlso Not ucrReceiverDayOfYear.IsEmpty AndAlso Not ucrReceiverYear.IsEmpty AndAlso nudConditionLeft.Text <> "" AndAlso nudFrom.Text <> "" AndAlso nudTo.Text <> "" AndAlso NudConditionRight.Text <> "" Then ' and ucrInput is empty
+        If Not ucrReceiverRainfall.IsEmpty AndAlso ucrSaveSpells.IsComplete AndAlso Not ucrReceiverDate.IsEmpty AndAlso Not ucrReceiverDayOfYear.IsEmpty AndAlso Not ucrReceiverYear.IsEmpty AndAlso nudConditionLeft.Text <> "" AndAlso nudFrom.Text <> "" AndAlso nudTo.Text <> "" AndAlso NudConditionRight.Text <> "" Then ' and ucrInput is empty
             ucrBase.OKEnabled(True)
         Else
             ucrBase.OKEnabled(False)
@@ -201,7 +211,6 @@ Public Class dlgSpells
     End Sub
 
     Private Sub MaxValue()
-        ' run these when things are checked
         clsMaxValueManipulation.SetRCommand("list")
         clsMaxValueManipulation.AddParameter("sub2", clsRFunctionParameter:=clsYearGroupDaily, bIncludeArgumentName:=False)
         clsMaxValueManipulation.AddParameter("sub3", clsRFunctionParameter:=clsDayFromAndTo, bIncludeArgumentName:=False)
@@ -211,7 +220,7 @@ Public Class dlgSpells
         clsMaxValue.AddParameter("manipulations", clsRFunctionParameter:=clsMaxValueManipulation)
         clsMaxValue.AddParameter("sub_calculations", clsRFunctionParameter:=clsMaxValueList)
         clsMaxValueList.AddParameter("sub1", clsRFunctionParameter:=clsSpellLength, bIncludeArgumentName:=False)
-        clsMaxValue.AddParameter("result_name", Chr(34) & "Max_Length" & Chr(34))
+        clsMaxValue.AddParameter("result_name", Chr(34) & ucrSaveSpells.GetText() & Chr(34))
         clsMaxValue.AddParameter("save", 2)
     End Sub
 
@@ -268,5 +277,14 @@ Public Class dlgSpells
 
     Private Sub chkConditionRain_CheckedChanged(sender As Object, e As EventArgs) Handles chkConditionRain.CheckedChanged
         RainyDaysMethod()
+    End Sub
+
+    Private Sub ucrSaveSpells_ControlContentsChanged(ucrChangedControl As ucrCore) Handles ucrSaveSpells.ControlContentsChanged
+        TestOKEnabled()
+    End Sub
+
+    Private Sub ucrSaveSpells_ControlValueChanged(ucrChangedControl As ucrCore) Handles ucrSaveSpells.ControlValueChanged
+        clsMaxValue.SetAssignTo(ucrSaveSpells.ucrInputTextSave.GetText)
+        MaxValue()
     End Sub
 End Class

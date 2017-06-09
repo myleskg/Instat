@@ -43,13 +43,11 @@ Public Class dlgDefineCRI
     End Sub
 
     Private Sub InitialiseDialog()
-        'helpID
+        ucrBase.iHelpTopicID = 527
         ucrInputCRIPreview.IsReadOnly = True
         cmdEdit.Enabled = False
         cmdDelete.Enabled = False
         ucrChkScaleNumeric.Enabled = False
-
-        '  ucrBase.iHelpTopicID =
 
         'ucrnud
         ucrNudWeights.Minimum = 0
@@ -61,8 +59,8 @@ Public Class dlgDefineCRI
         ucrReceiverRedFlag.Selector = ucrSelectorCRI
         ucrReceiverRedFlag.SetMeAsReceiver()
         ucrReceiverRedFlag.SetIncludedDataTypes({"numeric", "logical", "factor"})
-        ucrReceiverRedFlag.AddIncludedMetadataProperty("Is_Corruption_Output", {"TRUE"})
-        ucrReceiverRedFlag.AddIncludedMetadataProperty("Is_Corruption_Red_Flag", {"TRUE"})
+        ucrReceiverRedFlag.AddIncludedMetadataProperty("Is_Corruption_Index", {"TRUE"})
+        'ucrReceiverRedFlag.AddExcludedMetadataProperty("Is_Corruption_Red_Flag", {"FALSE"})
 
         'ucrChk
         ucrChkScaleNumeric.SetText("Scale Numeric")
@@ -96,8 +94,9 @@ Public Class dlgDefineCRI
         ucrNudWeights.Value = 0
         clsCalculation.SetOperation("+")
 
-        ucrBase.clsRsyntax.SetFunction(frmMain.clsRLink.strInstatDataObject & "$apply_instat_calculation")
+        ucrBase.clsRsyntax.SetFunction(frmMain.clsRLink.strInstatDataObject & "$run_instat_calculation")
         ucrBase.clsRsyntax.AddParameter("calc", clsRFunctionParameter:=clsDefineFunction)
+        ucrBase.clsRsyntax.AddParameter("display", "FALSE")
 
         clsDefineFunction.SetRCommand("instat_calculation$new")
         clsDefineFunction.AddParameter("type", Chr(34) & "calculation" & Chr(34))
@@ -239,6 +238,7 @@ Public Class dlgDefineCRI
         i = i + 1
     End Sub
 
+    ' This is currently empty, but will be coded in the future
     Private Sub cmdEdit_Click(sender As Object, e As EventArgs) Handles cmdEdit.Click
 
     End Sub
@@ -271,7 +271,7 @@ Public Class dlgDefineCRI
     End Sub
 
     Private Sub ucrSelectorCRI_DataFrameChanged() Handles ucrSelectorCRI.DataFrameChanged
-        lstIndexComponents.Clear() ' sort this
+        lstIndexComponents.Items.Clear()
         clsCalculation.ClearParameters()
         clsDefineFunction.RemoveParameterByName("function_expression")
         clsDefineFunction.RemoveParameterByName("calculated_from")

@@ -194,6 +194,7 @@ Public Class dlgOneVarFitModel
 
     Public Sub FitDistFunction()
         UcrBase.clsRsyntax.SetBaseRFunction(clsROneVarFitModel)
+        clsROneVarFitModel.SetPackageName("fitdistrplus")
         clsROneVarFitModel.SetRCommand("fitdist")
         clsROneVarFitModel.AddParameter("distr", Chr(34) & ucrFamily.clsCurrDistribution.strRName & Chr(34))
         SetDataParameter()
@@ -210,7 +211,8 @@ Public Class dlgOneVarFitModel
     End Sub
 
     Private Sub SetVarTest()
-        clsVarTest.SetRCommand("EnvStats::varTest")
+        clsVarTest.SetPackageName("EnvStats")
+        clsVarTest.SetRCommand("varTest")
         UcrBase.clsRsyntax.SetBaseRFunction(clsVarTest)
         clsRConvert.SetRCommand("as.vector")
         clsRConvert.AddParameter("x", clsRFunctionParameter:=UcrReceiver.GetVariables())
@@ -241,7 +243,8 @@ Public Class dlgOneVarFitModel
     End Sub
 
     Private Sub SetNonSignTest()
-        clsRNonSignTest.SetRCommand("signmedian.test:: signmedian.test")
+        clsRNonSignTest.SetPackageName("signmedian.test")
+        clsRNonSignTest.SetRCommand("signmedian.test")
         UcrBase.clsRsyntax.SetBaseRFunction(clsRNonSignTest)
         clsRNonSignTest.AddParameter("x", clsRFunctionParameter:=UcrReceiver.GetVariables())
         clsRNonSignTest.AddParameter("conf.level", nudCI.Value.ToString)
@@ -440,7 +443,7 @@ Public Class dlgOneVarFitModel
         DataTypeAccepted()
     End Sub
 
-    Private Sub ucrDistributions_cboDistributionsIndexChanged(sender As Object, e As EventArgs) Handles ucrFamily.cboDistributionsIndexChanged
+    Private Sub ucrDistributions_cboDistributionsIndexChanged() Handles ucrFamily.ControlValueChanged
         SetBaseFunction()
         BinomialConditions()
         SetDataParameter()

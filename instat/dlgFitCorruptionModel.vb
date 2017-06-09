@@ -41,10 +41,9 @@ Public Class dlgFitCorruptionModel
     End Sub
 
     Private Sub InitialiseDialog()
+        ucrBase.iHelpTopicID = 529
         ucrBase.clsRsyntax.bExcludeAssignedFunctionOutput = False
 
-        'helpID
-        '  ucrBase.iHelpTopicID =
         ucrInputModelPreview.IsReadOnly = True
 
         clsBinomialModel.SetRCommand("binomial")
@@ -76,9 +75,9 @@ Public Class dlgFitCorruptionModel
         ucrSaveCorruptionModel.SetPrefix("Corruption_Model")
         ucrSaveCorruptionModel.SetSaveTypeAsModel()
         ucrSaveCorruptionModel.SetDataFrameSelector(ucrSelectorFitModel.ucrAvailableDataFrames)
-        ucrSaveCorruptionModel.SetCheckBoxText("Save Graph")
+        ucrSaveCorruptionModel.SetCheckBoxText("Save Model")
         ucrSaveCorruptionModel.SetIsComboBox()
-        ucrSaveCorruptionModel.SetAssignToIfUncheckedValue("last_graph")
+        ucrSaveCorruptionModel.SetAssignToIfUncheckedValue("last_model")
     End Sub
 
     Private Sub SetDefaults()
@@ -113,9 +112,6 @@ Public Class dlgFitCorruptionModel
     End Sub
 
     Private Sub SetRCodeForControls(bReset As Boolean)
-        'ucrReceiverOutput.SetRCode(clsModel, bReset)
-        'ucrReceiverControlVariables.SetRCode(clsModel1, bReset)
-        'ucrReceiverIndicators.SetRCode(clsModel1, bReset)
         ucrSelectorFitModel.SetRCode(clsCorruptionModel, bReset)
         ucrSaveCorruptionModel.SetRCode(clsCorruptionModel, bReset)
     End Sub
@@ -129,12 +125,14 @@ Public Class dlgFitCorruptionModel
     End Sub
 
     Private Sub ChangeBaseFunction()
-        If ucrReceiverOutput.strCurrDataType = "numeric" OrElse ucrReceiverOutput.strCurrDataType = "integer" Then
-            clsCorruptionModel.SetRCommand("lm")
-            clsCorruptionModel.RemoveParameterByName("family")
-        Else
-            clsCorruptionModel.SetRCommand("glm")
-            clsCorruptionModel.AddParameter("family", clsRFunctionParameter:=clsBinomialModel)
+        If Not ucrReceiverOutput.IsEmpty Then
+            If frmMain.clsRLink.IsBinary(ucrSelectorFitModel.ucrAvailableDataFrames.cboAvailableDataFrames.Text, ucrReceiverOutput.GetVariableNames(False)) Then
+                clsCorruptionModel.SetRCommand("glm")
+                clsCorruptionModel.AddParameter("family", clsRFunctionParameter:=clsBinomialModel)
+            Else
+                clsCorruptionModel.SetRCommand("lm")
+                clsCorruptionModel.RemoveParameterByName("family")
+            End If
         End If
     End Sub
 
